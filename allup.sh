@@ -12,6 +12,8 @@ CACHE_DIR="$SCRIPTS_DIR/cache"
 TMUX="${TMUX:-$3}"
 NEST_CMD="MAJO_SCRIPT_ACTION=\"$MAJO_SCRIPT_ACTION\" DBUS_SESSION_BUS_ADDRESS=\"$DBUS_SESSION_BUS_ADDRESS\" $0 $ORIGIN_USER $ORIGIN_HOME $TMUX"
 
+ORIGIN_HOME="${2:-$HOME}"
+
 if [ "$TMUX" == "" ]; then
     if [ "$EUID" == 0 ]; then
         echo "Error: Cant be executed as root user, please use the none-root sudo user."
@@ -56,12 +58,54 @@ usersudo mkdir -p $CACHE_DIR
 
 ### INIT HEAD END
 
+# CONFIG
+
+source ./config.sh
+
+if [[ -z "${ALLUP_CLEANUP_CACHE_DAYS:-}" || ! "$ALLUP_CLEANUP_CACHE_DAYS" =~ ^[0-9]+$ ]]; then
+  echo "ALLUP_CLEANUP_CACHE_DAYS is unset or not a whole number"
+fi
+ALLUP_CLEANUP_CACHE_SECS=$(( ALLUP_CLEANUP_CACHE_DAYS * 86400 ))
+
+if [[ -z "${ALLUP_KEYRING_CACHE_DAYS:-}" || ! "$ALLUP_KEYRING_CACHE_DAYS" =~ ^[0-9]+$ ]]; then
+  echo "ALLUP_KEYRING_CACHE_DAYS is unset or not a whole number"
+fi
+ALLUP_KEYRING_CACHE_SECS=$(( ALLUP_KEYRING_CACHE_DAYS * 86400 ))
+
+if [[ -z "${ALLUP_MIRROR_CACHE_DAYS:-}" || ! "$ALLUP_MIRROR_CACHE_DAYS" =~ ^[0-9]+$ ]]; then
+  echo "ALLUP_MIRROR_CACHE_DAYS is unset or not a whole number"
+fi
+ALLUP_MIRROR_CACHE_SECS=$(( ALLUP_MIRROR_CACHE_DAYS * 86400 ))
+
+if [[ -z "${ALLUP_DEFRAG_CACHE_DAYS:-}" || ! "$ALLUP_DEFRAG_CACHE_DAYS" =~ ^[0-9]+$ ]]; then
+  echo "ALLUP_DEFRAG_CACHE_DAYS is unset or not a whole number"
+fi
+ALLUP_DEFRAG_CACHE_SECS=$(( ALLUP_DEFRAG_CACHE_DAYS * 86400 ))
+
 if [ "$MAJO_SCRIPT_ACTION" == "test" ]; then
     echo "Test run done, script should work!"
     exit 0
 fi
 
 if [ "$MAJO_SCRIPT_ACTION" != "restart" ]; then 
+    if [ "$MAJO_SCRIPT_ACTION" == "poweroff" ]; then
+        usersudo rm -f $CACHE_DIR/cachyos-cleanup $CACHE_DIR/cachyos-defrag
+    else 
+        used=$(df / | tail -n1 | tr -s ' ' | cut -d' ' -f5 | tr -d '%')
+        if [ "$used" -gt 80 ]; then
+            echo "More then 80% used of the root partition (/), start cleanup script! $used% in use!"
+            usersudo rm -f $CACHE_DIR/cachyos-cleanup
+        fi
+    fi
+
+    # CLEANUP
+    if [ ! -f $CACHE_DIR/cachyos-cleanup ] || [ $(( $(date +%s) - $(stat -c %Y $CACHE_DIR/cachyos-cleanup) )) -gt 604800 ]; then
+            echo "Run cleanup script..."
+            sudo -- $SCRIPTS_DIR/cleanup.sh $ORIGIN_USER || true
+            usersudo touch $CACHE_DIR/cachyos-cleanup
+    fi
+
+    # KEYRING
     if [ ! -f $CACHE_DIR/cachyos-keys ] || [ $(( $(date +%s) - $(stat -c %Y $CACHE_DIR/cachyos-keys) )) -gt 1210000 ]; then
         echo "Check cachyos keys..."
         usersudo pacman -Sy archlinux-keyring || true
@@ -69,33 +113,22 @@ if [ "$MAJO_SCRIPT_ACTION" != "restart" ]; then
         usersudo touch $CACHE_DIR/cachyos-keys
     fi
 
+    # MIRROR
     if [ ! -f $CACHE_DIR/cachyos-rate-mirrors ] || [ $(( $(date +%s) - $(stat -c %Y $CACHE_DIR/cachyos-rate-mirrors) )) -gt 2419000 ]; then
         echo "Check cachyos mirrors..."
         usersudo cachyos-rate-mirrors || true
         usersudo touch $CACHE_DIR/cachyos-rate-mirrors
     fi
 
-    if [ "$MAJO_SCRIPT_ACTION" == "poweroff" ]; then
-        usersudo rm -f $CACHE_DIR/cachyos-care $CACHE_DIR/cachyos-defrag
-    else 
-        used=$(df / | tail -n1 | tr -s ' ' | cut -d' ' -f5 | tr -d '%')
-        if [ "$used" -gt 80 ]; then
-            echo "More then 80% used of the root partition (/), start care script! $used% in use!"
-            usersudo rm -f $CACHE_DIR/cachyos-care
-        fi
-    fi
-
-    if [ ! -f $CACHE_DIR/cachyos-care ] || [ $(( $(date +%s) - $(stat -c %Y $CACHE_DIR/cachyos-care) )) -gt 604800 ]; then
-            echo "Run care script..."
-            sudo -- $SCRIPTS_DIR/care.sh $ORIGIN_USER || true
-            usersudo touch $CACHE_DIR/cachyos-care
-    fi
+    # DEFRAG
     if [ ! -f $CACHE_DIR/cachyos-defrag ] || [ $(( $(date +%s) - $(stat -c %Y $CACHE_DIR/cachyos-defrag) )) -gt 604800 ]; then
         echo "Run defrag script..."
         sudo -- $SCRIPTS_DIR/defrag.sh $ORIGIN_USER  || true
         usersudo touch $CACHE_DIR/cachyos-defrag
     fi
 fi
+
+# UPGRADE
 
 pacman -Syu --noconfirm || true
 

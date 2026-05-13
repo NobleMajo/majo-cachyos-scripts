@@ -1,6 +1,27 @@
 # majo-cachyos-scripts
 
+**Pure convenience, nothing more.**
 Automated maintenance and upgrade scripts for CachyOS, designed to run non-interactively inside a controlled tmux session.
+
+## Usage
+
+- `alltest`: Does nothing only as setup test.
+- `allup`: 
+  1. **KEYRING**: cachyos keyrings update (all 14 days)
+  2. **MIRROR**: cachyos mirror speedtest (all 28 days)
+  3. **CARE**: tmp, cache, log and docker cleanup (all 7 days)
+  4. **DEFRAG**: disk defrag and trim (all 7 days)
+  5. pacman, paru and flatpak upgrades
+- `alldown`: Same as `allup` but shuts down afterwards.
+  Also always executes the **CARE** and **TRIM** scripts. 
+  *On the way to bed you can execute this and leave your computer alone.*
+- `allre`: Same as `allup` but triggers a restart via the desktop enviornment.
+  Also never executes **KEYRING**, **MIRROR**, **CARE** or **TRIM**. Is an upgrade and restart only.
+  If you have some system issue and you wanna check for updates and install them use this.
+  *For the time of execution and until the system is started again you can go to the toilet or chill on your phone.*
+  It does a quick upgrade with long lasting tasks and restart the system.
+  **!!! WARNING:** Close all windows before execution, that could delay the restart or contain unsaved files.
+
 
 ## Requirements
 
@@ -22,25 +43,6 @@ Automated maintenance and upgrade scripts for CachyOS, designed to run non-inter
   - or remove the aliases
   - or replace it with your editor:
     - vim (exit = ESC>`:!q`>ENTER)
-
-## Usage
-
-- `alltest`: Does nothing only as setup test.
-- `allup`: 
-  1. **KEYRING**: cachyos keyrings update (all 14 days)
-  2. **MIRROR**: cachyos mirror speedtest (all 28 days)
-  3. **CARE**: tmp, cache, log and docker cleanup (all 7 days)
-  4. **DEFRAG**: disk defrag and trim (all 7 days)
-  5. pacman, paru and flatpak upgrades
-- `alldown`: Same as `allup` but shuts down afterwards.
-  Also always executes the **CARE** and **TRIM** scripts. 
-  *On the way to bed you can execute this and leave your computer alone.*
-- `allre`: Same as `allup` but triggers a restart via the desktop enviornment.
-  Also never executes **KEYRING**, **MIRROR**, **CARE** or **TRIM**. Is an upgrade and restart only.
-  If you have some system issue and you wanna check for updates and install them use this.
-  *For the time of execution and until the system is started again you can go to the toilet or chill on your phone.*
-  It does a quick upgrade with long lasting tasks and restart the system.
-  **!!! WARNING:** Close all windows before execution, that could delay the restart or contain unsaved files.
 
 ## Installation
 
@@ -89,7 +91,7 @@ Automated maintenance and upgrade scripts for CachyOS, designed to run non-inter
 
 4. Test them using `alltest`
 
-## Script Parts
+## Script Explanation
 
 ### Init Head
 
