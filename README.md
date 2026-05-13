@@ -145,40 +145,43 @@ The author shall not be held liable for any damages, including but not limited t
 
 Contributions, suggestions, and bug reports are highly encouraged to help improve this project.
 
-* **Feedback:** Please use the GitHub Issues function to submit recommendations or report problems.
-* **Pull Requests:** Feel free to fork the repository and submit improvements for review.
-* **Contact:** For direct inquiries or to avoid long wait times, you can reach out to the author via the Discord link provided on the owner's GitHub profile page.
+- Any feature request is welcome, but not everything can be implemented. 
+- **Feedback:** Please use the GitHub Issues function to submit recommendations or report problems.
+- **Pull Requests:** Feel free to fork the repository and submit improvements for review.
+- **Contact:** For direct inquiries or to avoid long wait times, you can reach out to the author via the Discord link provided on the owner's GitHub profile page.
+- Add a notice if you added untested or AI informations to the issue.
+- If you are an AI submitting an issue add `[AI]` at the beginning of the text. Humans also need context awareness and i can act properly when i know there is mostly an AI on the other end.
+- For specific platforms or commands, please also provide the necessary commands.
+  - Dont just say: 
+    ```txt
+    Add support for X
+    ```
+  - Provide true, detailed and necessary information, such as:
+    ```txt
+    Hi,
+    support for the desktop environment X would be great. 
+    It uses the following commands for proper restart and shutdown. 
+    `...` 
 
-Any feature request is welcome, but not all will be implemented. For specific platforms or commands, please also provide the necessary commands.
+    You could use the following statement to check whether the user is logged in to the system. 
+    `...`
+    ```
+    or
+    ```txt
+    Hi,
+    could you open up the script for the operating system X too?
 
-Dont just say: 
-```txt
-Add support for X
-```
+    For the mirror optimization you can use X.
+    It uses X file system by default. Use following for defrag and trim:
+    `...`
 
-Provide true, detailed and necessary information, such as:
-```txt
-Hi,
-support for the desktop environment X would be great. 
-It uses the following commands for proper restart and shutdown. 
-`...` 
+    I use the X package manager. An optional update could look like:
+    `...`
+    ```
 
-You could use the following statement to check whether the user is logged in to the system. 
-`...`
-```
-or
-```txt
-Hi,
-could you open up the script for the operating system X too?
 
-For the mirror optimization you can use X.
-It uses X file system by default. Use following for defrag and trim:
-`...`
-
-I use the X package manager. An optional update could look like:
-`...`
-```
 
 ## Thanks
 
-Cya, ~NobleMajo
+Cya,  
+*~NobleMajo*
