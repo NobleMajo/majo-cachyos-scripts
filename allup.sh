@@ -10,9 +10,17 @@ ORIGIN_HOME="${2:-$HOME}"
 SCRIPTS_DIR=$(dirname "$0")
 CACHE_DIR="$SCRIPTS_DIR/cache"
 TMUX="${TMUX:-$3}"
-NEST_CMD="MAJO_SCRIPT_ACTION=\"$MAJO_SCRIPT_ACTION\" DBUS_SESSION_BUS_ADDRESS=\"$DBUS_SESSION_BUS_ADDRESS\" $0 $ORIGIN_USER $ORIGIN_HOME $TMUX"
 
-ORIGIN_HOME="${2:-$HOME}"
+# escapes variables and prevents command injection
+MAJO_SCRIPT_ACTION=$(printf "%q" "$MAJO_SCRIPT_ACTION")
+DBUS_SESSION_BUS_ADDRESS=$(printf "%q" "$DBUS_SESSION_BUS_ADDRESS")
+XDG_CURRENT_DESKTOP=$(printf "%q" "$XDG_CURRENT_DESKTOP")
+ORIGIN_USER=$(printf "%q" "$ORIGIN_USER")
+ORIGIN_HOME=$(printf "%q" "$ORIGIN_HOME")
+TMUX=$(printf "%q" "$TMUX")
+SAFE_SCRIPT=$(printf "%q" "$0")
+
+NEST_CMD="MAJO_SCRIPT_ACTION=$MAJO_SCRIPT_ACTION XDG_CURRENT_DESKTOP=$XDG_CURRENT_DESKTOP DBUS_SESSION_BUS_ADDRESS=$DBUS_SESSION_BUS_ADDRESS $SAFE_SCRIPT $ORIGIN_USER $ORIGIN_HOME $TMUX"
 
 if [ "$TMUX" == "" ]; then
     if [ "$EUID" == 0 ]; then
@@ -58,9 +66,19 @@ usersudo mkdir -p $CACHE_DIR
 
 ### INIT HEAD END
 
-# CONFIG
+# LOAD VARIABLES
 
-source ./config.sh
+set -o allexport
+
+source $SCRIPTS_DIR/.env.defaults
+
+if [ -f .env ]; then
+    source $SCRIPTS_DIR/.env
+fi
+
+set +o allexport
+
+# VALIDATE VARIABLES
 
 if [[ -z "${ALLUP_CLEANUP_CACHE_DAYS:-}" || ! "$ALLUP_CLEANUP_CACHE_DAYS" =~ ^[0-9]+$ ]]; then
   echo "ALLUP_CLEANUP_CACHE_DAYS is unset or not a whole number"
@@ -82,6 +100,8 @@ if [[ -z "${ALLUP_DEFRAG_CACHE_DAYS:-}" || ! "$ALLUP_DEFRAG_CACHE_DAYS" =~ ^[0-9
 fi
 ALLUP_DEFRAG_CACHE_SECS=$(( ALLUP_DEFRAG_CACHE_DAYS * 86400 ))
 
+# START SCRIPT
+
 if [ "$MAJO_SCRIPT_ACTION" == "test" ]; then
     echo "Test run done, script should work!"
     exit 0
@@ -99,14 +119,14 @@ if [ "$MAJO_SCRIPT_ACTION" != "restart" ]; then
     fi
 
     # CLEANUP
-    if [ ! -f $CACHE_DIR/cachyos-cleanup ] || [ $(( $(date +%s) - $(stat -c %Y $CACHE_DIR/cachyos-cleanup) )) -gt 604800 ]; then
+    if [ ! -f $CACHE_DIR/cachyos-cleanup ] || [ $(( $(date +%s) - $(stat -c %Y $CACHE_DIR/cachyos-cleanup) )) -gt $ALLUP_CLEANUP_CACHE_SECS ]; then
             echo "Run cleanup script..."
-            sudo -- $SCRIPTS_DIR/cleanup.sh $ORIGIN_USER || true
+            sudo -- $SCRIPTS_DIR/cleanup.sh $ORIGIN_USER $ORIGIN_HOME || true
             usersudo touch $CACHE_DIR/cachyos-cleanup
     fi
 
     # KEYRING
-    if [ ! -f $CACHE_DIR/cachyos-keys ] || [ $(( $(date +%s) - $(stat -c %Y $CACHE_DIR/cachyos-keys) )) -gt 1210000 ]; then
+    if [ ! -f $CACHE_DIR/cachyos-keys ] || [ $(( $(date +%s) - $(stat -c %Y $CACHE_DIR/cachyos-keys) )) -gt $ALLUP_KEYRING_CACHE_SECS ]; then
         echo "Check cachyos keys..."
         usersudo pacman -Sy archlinux-keyring || true
         usersudo pacman-key --refresh-keys || true
@@ -114,14 +134,14 @@ if [ "$MAJO_SCRIPT_ACTION" != "restart" ]; then
     fi
 
     # MIRROR
-    if [ ! -f $CACHE_DIR/cachyos-rate-mirrors ] || [ $(( $(date +%s) - $(stat -c %Y $CACHE_DIR/cachyos-rate-mirrors) )) -gt 2419000 ]; then
+    if [ ! -f $CACHE_DIR/cachyos-rate-mirrors ] || [ $(( $(date +%s) - $(stat -c %Y $CACHE_DIR/cachyos-rate-mirrors) )) -gt $ALLUP_MIRROR_CACHE_SECS ]; then
         echo "Check cachyos mirrors..."
         usersudo cachyos-rate-mirrors || true
         usersudo touch $CACHE_DIR/cachyos-rate-mirrors
     fi
 
     # DEFRAG
-    if [ ! -f $CACHE_DIR/cachyos-defrag ] || [ $(( $(date +%s) - $(stat -c %Y $CACHE_DIR/cachyos-defrag) )) -gt 604800 ]; then
+    if [ ! -f $CACHE_DIR/cachyos-defrag ] || [ $(( $(date +%s) - $(stat -c %Y $CACHE_DIR/cachyos-defrag) )) -gt $ALLUP_DEFRAG_CACHE_SECS ]; then
         echo "Run defrag script..."
         sudo -- $SCRIPTS_DIR/defrag.sh $ORIGIN_USER  || true
         usersudo touch $CACHE_DIR/cachyos-defrag
@@ -129,11 +149,15 @@ if [ "$MAJO_SCRIPT_ACTION" != "restart" ]; then
 fi
 
 # UPGRADE
-
 pacman -Syu --noconfirm || true
 
-paru -Syu --noconfirm --noremovemake || true
-paru -Scc --noconfirm || true
+if usersudo command -v paru >/dev/null; then
+    echo "Paru found, start update..."
+    paru -Syu --noconfirm --noremovemake || true
+    paru -Scc --noconfirm || true
+else
+    echo "Paru not found, skipping updates."
+fi
 
 if usersudo command -v flatpak >/dev/null; then
     echo "Flatpak found, start update..."
@@ -144,21 +168,41 @@ else
     echo "Flatpak not found, skipping updates."
 fi
 
+echo "All done!"
+sleep 3
+
 if [ "$MAJO_SCRIPT_ACTION" == "restart" ]; then
-    echo "\nAllup done!\n\nRestart in 5 seconds..."
-    sleep 5
-    sudo shutdown -r +1 || true # plan restart in 1 minute
-    usersudo qdbus6 org.kde.Shutdown /Shutdown logoutAndReboot || true # graceful user restart now
+    shutdown -r +1
+
+    if [ "$XDG_CURRENT_DESKTOP" = "GNOME" ]; then
+        echo "XDG_CURRENT_DESKTOP is 'GNOME'. Restart now...."
+        usersudo gdbus call --session --dest org.gnome.SessionManager --object-path /org/gnome/SessionManager --method org.gnome.SessionManager.Reboot || true
+        exit 0
+    elif [[ "$XDG_CURRENT_DESKTOP" == *"KDE"* ]]; then
+        echo "Found 'qdbus6', probably KDE Plasma detected. Restart now...."
+        usersudo qdbus6 org.kde.Shutdown /Shutdown logoutAndReboot || true
+        exit 0
+    else
+        echo "Desktop environment not detected, restart in 1 minute." 
+    fi
+
     exit 0
 fi
 
 if [ "$MAJO_SCRIPT_ACTION" == "poweroff" ]; then
-    echo "\nAllup done!\n\nScheduled a shutdown in 10 seconds..."
-    sudo shutdown -P +2 || true # plan shutdown in 2 minutes
-    sleep 10
-    usersudo qdbus6 org.kde.Shutdown /Shutdown logoutAndShutdown || true # graceful user shutdown now
+    shutdown -P +1
+
+    if [ "$XDG_CURRENT_DESKTOP" = "GNOME" ]; then
+        echo "XDG_CURRENT_DESKTOP is 'GNOME'. Poweroff now...."
+        usersudo gdbus call --session --dest org.gnome.SessionManager --object-path /org/gnome/SessionManager --method org.gnome.SessionManager.Shutdown || true
+    elif [[ "$XDG_CURRENT_DESKTOP" == *"KDE"* ]]; then
+        echo "Found 'qdbus6', probably KDE Plasma detected. Poweroff now...."
+        usersudo qdbus6 org.kde.Shutdown /Shutdown logoutAndShutdown || true
+    else 
+        echo "Desktop environment not detected, poweroff in 1 minute."
+    fi
     exit 0
 fi
 
-echo "\nAllup done!\n\nPress enter to exit session..."
+echo "Press enter to exit session..."
 read

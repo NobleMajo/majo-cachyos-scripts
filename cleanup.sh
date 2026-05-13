@@ -2,38 +2,17 @@
 
 set -ex
 
-ORIGIN_USER="${1:-$USER}"
-ORIGIN_HOME="${2:-$HOME}"
+ORIGIN_USER="$1"
+ORIGIN_HOME="$2"
 
-SCRIPTS_DIR=$(dirname "$0")
-CACHE_DIR="$SCRIPTS_DIR/cache"
-TMUX="${TMUX:-$3}"
-NEST_CMD="AFTER_ACTION=\"$AFTER_ACTION\" DBUS_SESSION_BUS_ADDRESS=\"$DBUS_SESSION_BUS_ADDRESS\" $0 $ORIGIN_USER $ORIGIN_HOME $TMUX"
-
-if [ "$TMUX" == "" ]; then
-    if [ "$EUID" == 0 ]; then
-        echo "Error: Cant be executed as root user, please use the none-root sudo user."
-        exit 1
-    fi
-
-    echo "Root access required for system upgrades..."
-    sudo echo "Root access granted!"
-
-    echo "Start tmux session..."
-    sudo tmux new-session -A -s allup "$NEST_CMD"
-    echo "Tmux session done!"
-    exit 0
+if [ "$ORIGIN_USER" == "" ]; then
+    echo "Error: none-root username needs to be set as first parameter: <cmd> <username> <homepath>"
+    exit 1
 fi
 
-if [ "$EUID" != 0 ]; then
-    mkdir -p $SCRIPTS_DIR/logs || true
-    mv -f $SCRIPTS_DIR/logs/allup.log2 $SCRIPTS_DIR/logs/allup.log3 >/dev/null 2>&1 || true
-    mv -f $SCRIPTS_DIR/logs/allup.log1 $SCRIPTS_DIR/logs/allup.log2 >/dev/null 2>&1 || true
-
-    echo "Start root execution..."
-    sudo su - root -c "$NEST_CMD 2>&1 | tee -a $SCRIPTS_DIR/logs/allup.log1"
-    echo "Root execution done!"
-    exit 0
+if [ "$ORIGIN_HOME" == "" ]; then
+    echo "Error: none-root homedir path needs to be set as second parameter: <cmd> <username> <homepath>"
+    exit 1
 fi
 
 if [ "$ORIGIN_USER" == "root" ]; then
@@ -122,5 +101,5 @@ else
     usersudo docker volume prune -f || true
 fi
 
-echo "Care script done!"
+echo "Cleanup script done!"
 exit 0
