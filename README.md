@@ -5,6 +5,19 @@ Automated maintenance and upgrade scripts for CachyOS, designed to run non-inter
 
 > **Notice:** Before usage, review the [Use at own risk](#use-at-own-risk) section.
 
+## TOC
+
+- [majo-cachyos-scripts](#majo-cachyos-scripts)
+  - [TOC](#toc)
+  - [Usage](#usage)
+  - [Requirements](#requirements)
+  - [Installation](#installation)
+  - [`allup` Script](#allup-script)
+  - [Tricks](#tricks)
+  - [Use at own risk](#use-at-own-risk)
+  - [Contribution](#contribution)
+  - [Thanks](#thanks)
+
 ## Usage
 
 - `alltest`: Does nothing only as setup test.
@@ -133,13 +146,30 @@ This are the script stages:
 - **Dual-Stream Logging:** Uses `tee` to provide real-time terminal feedback while simultaneously capturing all output (including standard error) into the rotated log files.
 * 
 
+## Tricks
+
+### Scrollable tmux sessions:
+
+Configure tmux system-wide to allow the mouse wheel to scroll in tmux sessions:
+```bash
+sudo bash -c 'cat > /etc/tmux.conf << "EOF"
+  set -g mouse on
+  setw -g mode-keys vi
+
+  bind -n WheelUpPane if-shell -F -t = "#{mouse_any_flag}" "send-keys -M" "if -Ft= '#{pane_in_mode}' 'send-keys -M' 'copy-mode -e; send-keys -M'"
+  bind -n WheelDownPane select-pane -t= \; send-keys -M
+
+  bind-key -T copy-mode-vi WheelUpPane send-keys -X halfpage-up
+  bind-key -T copy-mode-vi WheelDownPane send-keys -X halfpage-down
+EOF'
+chmod 664 /etc/tmux.conf
+```
+
 ## Use at own risk
 
 This software is provided **as is**, without warranty of any kind. By using these scripts, you acknowledge that you are doing so entirely at your **own discretion and risk**.
 
 The author shall not be held liable for any damages, including but not limited to system instability, data loss, or corrupted configurations resulting from the automated nature of these scripts. It is your responsibility to audit the code and ensure it is compatible with your specific environment before execution.
-
-
 
 ## Contribution
 
@@ -178,8 +208,6 @@ Contributions, suggestions, and bug reports are highly encouraged to help improv
     I use the X package manager. An optional update could look like:
     `...`
     ```
-
-
 
 ## Thanks
 
