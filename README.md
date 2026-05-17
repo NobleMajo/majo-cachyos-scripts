@@ -22,10 +22,10 @@ Automated maintenance and upgrade scripts for CachyOS, designed to run non-inter
   - [Automation Features](#automation-features)
 - [Tricks](#tricks)
   - [Scrollable tmux sessions:](#scrollable-tmux-sessions)
+  - [Sudo lockout](#sudo-lockout)
 - [Use at own risk](#use-at-own-risk)
 - [Contribution](#contribution)
 - [Thanks](#thanks)
-
 
 ## Usage
 
@@ -183,6 +183,14 @@ sudo bash -c 'cat > /etc/tmux.conf << "EOF"
   bind-key -T copy-mode-vi WheelDownPane send-keys -X halfpage-down
 EOF'
 chmod 664 /etc/tmux.conf
+```
+
+### Sudo lockout
+
+After some sudo commands sudo will lock you out.
+It prompts you for your password and then rejects it even if it was right. Use your root user to unlock:
+```bash
+su root -c "faillock --user $USER --reset"
 ```
 
 ## Use at own risk
