@@ -125,11 +125,13 @@ You can replace the code command in the aliases with any editor:
 You can configure the cache time and interactive paru aur package updates via a `.env` file. Just create a `.env` in the cloned root dir or copy the existing `.env.defaults` file: `cp .env.defaults .env`.
 
 ## AUR Updates
-Neither `paru` and `yay` offers an effective method for performing non-interactive, unattended updates.
+Neither `paru` and `yay` offers an effective method for performing non-interactive / unattended upgrades.
+For maximum convenience, the script requires non-interactive upgrades.
 
-I added a configuration to allow interactive AUR updates via paru when enabled and its not a restart/reboot or poweroff/shutdown of your host.
+I added a configuration that allows interactive AUR updates via `paru` when enabled, for updates without restart/reboot or poweroff/shutdown.
 
-So `alldown` and `allre` will never do a AUR update. That will only work when you use `allup` with `INTERACTIVE_AUR=true`.
+So `alldown` and `allre` will never do a AUR update.
+AUR Updates only run with `allup` and `INTERACTIVE_AUR=true` in the `.env` file.
 
 ## `allup` Script
 
