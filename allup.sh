@@ -80,6 +80,10 @@ set +o allexport
 
 # VALIDATE VARIABLES
 
+if [ "$INTERACTIVE_AUR" != "false" ] && [ "$INTERACTIVE_AUR" != "true" ]; then
+  echo "INTERACTIVE_AUR is unset or not a boolean"
+fi
+
 if [[ -z "${ALLUP_CLEANUP_CACHE_DAYS:-}" || ! "$ALLUP_CLEANUP_CACHE_DAYS" =~ ^[0-9]+$ ]]; then
   echo "ALLUP_CLEANUP_CACHE_DAYS is unset or not a whole number"
 fi
@@ -151,10 +155,19 @@ fi
 # UPGRADE
 pacman -Syu --noconfirm || true
 
+find /var/cache/pacman/pkg/ -name "download-*" -delete || true
+pacman -Sc --noconfirm || true
+
 if usersudo command -v paru >/dev/null; then
     echo "Paru found, start update..."
-    paru -Syu --noconfirm --noremovemake || true
-    paru -Scc --noconfirm || true
+    paru -Syu --repo --noconfirm --noremovemake
+    paru -Sc --noconfirm
+
+    if [ "$MAJO_SCRIPT_ACTION" == "" ] && [ "$INTERACTIVE_AUR" == "true" ]; then
+        echo "Paru interactive aur updates..."
+        paru -Sua --noconfirm --noremovemake
+        paru -Sc --noconfirm
+    fi
 else
     echo "Paru not found, skipping updates."
 fi

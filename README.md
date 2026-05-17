@@ -12,6 +12,8 @@ Automated maintenance and upgrade scripts for CachyOS, designed to run non-inter
   - [Usage](#usage)
   - [Requirements](#requirements)
   - [Installation](#installation)
+  - [Configuration](#configuration)
+  - [AUR Updates](#aur-updates)
   - [`allup` Script](#allup-script)
   - [Tricks](#tricks)
   - [Use at own risk](#use-at-own-risk)
@@ -51,7 +53,7 @@ Automated maintenance and upgrade scripts for CachyOS, designed to run non-inter
 ### Optional
 
 Following also run if installed:
-- `paru`: upgrade and cleanup
+- `paru`: upgrade and cleanup (not for aur packages: no stable non-interactive interface)
 - `flatpak`: upgrade, uninstall unused and repair
 - `docker`: cleanup
 - KDE Plasma or GNOME for **graceful** reboot / shutdown
@@ -71,7 +73,7 @@ You can replace the code command in the aliases with any editor:
     - Bash: `~/.bashrc`
     - Fish: `~/.config/fish/config.fish`
     
-    Make sure to adjust `MAJO_SCRIPT_DIR` to match your actual path.
+    Make sure to adjust `MAJO_SCRIPT_DIR` to match your actual clone path.
     ### Bash
     ```bash
     MAJO_SCRIPT_DIR="~/ws/majo-cachyos-scripts"
@@ -110,6 +112,17 @@ You can replace the code command in the aliases with any editor:
     - Fish: `source ~/.config/fish/config.fish`
 
 4. Test them using `alltest`
+
+## Configuration
+
+You can configure the cache time and interactive paru aur package updates via a `.env` file. Just create a `.env` in the cloned root dir or copy the existing `.env.defaults` file: `cp .env.defaults .env`.
+
+## AUR Updates
+Neither `paru` and `yay` offers an effective method for performing non-interactive, unattended updates.
+
+I added a configuration to allow interactive AUR updates via paru when enabled and its not a restart/reboot or poweroff/shutdown of your host.
+
+So `alldown` and `allre` will never do a AUR update. That will only work when you use `allup` with `INTERACTIVE_AUR=true`.
 
 ## `allup` Script
 
