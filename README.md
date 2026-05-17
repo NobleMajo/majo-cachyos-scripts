@@ -7,18 +7,25 @@ Automated maintenance and upgrade scripts for CachyOS, designed to run non-inter
 
 ## TOC
 
-- [majo-cachyos-scripts](#majo-cachyos-scripts)
-  - [TOC](#toc)
-  - [Usage](#usage)
-  - [Requirements](#requirements)
-  - [Installation](#installation)
-  - [Configuration](#configuration)
-  - [AUR Updates](#aur-updates)
-  - [`allup` Script](#allup-script)
-  - [Tricks](#tricks)
-  - [Use at own risk](#use-at-own-risk)
-  - [Contribution](#contribution)
-  - [Thanks](#thanks)
+- [TOC](#toc)
+- [Usage](#usage)
+- [Requirements](#requirements)
+  - [Required](#required)
+  - [Usually already installed on CachyOS](#usually-already-installed-on-cachyos)
+  - [Optional](#optional)
+- [Installation](#installation)
+- [Configuration](#configuration)
+- [AUR Updates](#aur-updates)
+- [`allup` Script](#allup-script)
+  - [Execution Flow](#execution-flow)
+  - [Security Features](#security-features)
+  - [Automation Features](#automation-features)
+- [Tricks](#tricks)
+  - [Scrollable tmux sessions:](#scrollable-tmux-sessions)
+- [Use at own risk](#use-at-own-risk)
+- [Contribution](#contribution)
+- [Thanks](#thanks)
+
 
 ## Usage
 
