@@ -11,6 +11,10 @@ SCRIPTS_DIR=$(dirname "$0")
 CACHE_DIR="$SCRIPTS_DIR/cache"
 TMUX="${TMUX:-$3}"
 
+if [ -z "$MAJO_SCRIPT_ACTION" ]; then
+    MAJO_SCRIPT_ACTION="none"
+fi
+
 # escapes variables and prevents command injection
 MAJO_SCRIPT_ACTION=$(printf "%q" "$MAJO_SCRIPT_ACTION")
 DBUS_SESSION_BUS_ADDRESS=$(printf "%q" "$DBUS_SESSION_BUS_ADDRESS")
@@ -72,9 +76,9 @@ set -o allexport
 
 source $SCRIPTS_DIR/.env.defaults
 
-if [ -f .env ]; then
+if [ -f $SCRIPTS_DIR/.env ]; then
     source $SCRIPTS_DIR/.env
-fi
+fi 
 
 set +o allexport
 
@@ -163,7 +167,9 @@ if usersudo command -v paru >/dev/null; then
     paru -Syu --repo --noconfirm --noremovemake
     paru -Sc --noconfirm
 
-    if [ "$MAJO_SCRIPT_ACTION" == "" ] && [ "$INTERACTIVE_AUR" == "true" ]; then
+    echo "MAJO_SCRIPT_ACTION=| $MAJO_SCRIPT_ACTION |"
+    echo "INTERACTIVE_AUR=| $INTERACTIVE_AUR |"
+    if [ "$MAJO_SCRIPT_ACTION" = "none" ] && [ "$INTERACTIVE_AUR" = "true" ]; then
         echo "Paru interactive aur updates..."
         paru -Sua --noconfirm --noremovemake
         paru -Sc --noconfirm
