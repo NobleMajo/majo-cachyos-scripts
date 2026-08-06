@@ -1,7 +1,17 @@
 {
 	"folders": [
 		{
-			"path": ".."
+			"path": "../../Downloads"
+		},
+		{
+			"path": "../../archive"
+		},
+		{
+			"path": "../../ws"
+		},
+		{
+			"name": "SSH FS - cunet2",
+			"uri": "ssh://cunet2/srv"
 		}
 	],
 	"settings": {}
