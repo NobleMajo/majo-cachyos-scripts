@@ -1,0 +1,17 @@
+// copy this into your tui.jsonc
+{
+    "$schema": "https://opencode.ai/tui.json",
+    "scroll_speed": 3,
+    "scroll_acceleration": {
+        "enabled": true
+    },
+    "diff_style": "auto",
+    "mouse": true,
+    "theme": "system",
+    "attention": {
+        "enabled": true,
+        "notifications": false,
+        "sound": false,
+        "volume": 0.0
+    },
+}
