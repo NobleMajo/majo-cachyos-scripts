@@ -25,10 +25,6 @@
             },
         },
     },
-    "enabled_providers": [
-        "cunet",
-    ],
-    "disabled_providers": [],
     "compaction": {
         "auto": true,
         "prune": false,
@@ -41,16 +37,19 @@
     "default_agent": "plan",
     "agent": {
         "plan": {
-            "description": "Planning only, asks to edit docs files, but always blocks source code changes.",
             "mode": "primary",
             "temperature": 0.4,
-            "permission": {},
-            "prompt": "You are used inside OpenCode in plan mode. Plan the implementation and follow the users prompt. If a prompt is unclear, check for a README.md or other Markdown or docs files. At this point your not allowed to edit the source code. Always use the mcp named `explorer-mcp` to get a project overview, get your opencode permissions, and follow the explorer-mcp's behaviour instructions."
+            "color": "success",
+            "description": "Planning only, asks to edit docs files, but always blocks source code changes.",
+            "prompt": "You are used inside OpenCode in plan mode. Plan the implementation and follow the users prompt. If a prompt is unclear, check for a README.md or other Markdown or docs files. At this point your not allowed to edit the source code. Always use the mcp named `explorer-mcp` to get a project overview, get your opencode permissions, and follow the explorer-mcp's behaviour instructions.",
+            "permission": {}, // default permissions are all read-only
         },
         "build": {
-            "description": "Uses read-only permissiony by default, but is allowed to ask for write permissions.",
             "mode": "primary",
             "temperature": 0.2,
+            "color": "warning",
+            "description": "Uses read-only permissiony by default, but is allowed to ask for write permissions.",
+            "prompt": "You are used inside OpenCode in build mode. Implement requested features, refactor code, write unit tests, and execute build and shell tools to fulfill tasks. Always use the mcp named `explorer-mcp` to get a project overview, get your opencode permissions, and follow the explorer-mcp's behaviour instructions.",
             "permission": {
                 "edit": {
                     "*": "ask",
@@ -134,7 +133,6 @@
                     "*\n*": "deny"
                 }
             },
-            "prompt": "You are used inside OpenCode in build mode. Implement requested features, refactor code, write unit tests, and execute build and shell tools to fulfill tasks. Always use the mcp named `explorer-mcp` to get a project overview, get your opencode permissions, and follow the explorer-mcp's behaviour instructions."
         },
     },
     "permission": {
@@ -148,7 +146,6 @@
         "bun-oven-docs_*": "allow",
         "npm-docs_*": "allow",
         "nodejs-docs_*": "allow",
-        "package-manager-docs_*": "allow",
         "opencode-mirror-docs_*": "allow",
         "opencode-remote-docs_*": "allow",
         "golang-docs_*": "allow",
@@ -461,15 +458,6 @@
         //         "mcp-server-nodejs-api-docs"
         //     ],
         // },
-        "package-manager-docs": {
-            "type": "local",
-            "enabled": true,
-            "command": [
-                "bun",
-                "x",
-                "@iflow-mcp/mcp-package-docs"
-            ],
-        },
         "opencode-docs": {
             "type": "local",
             "enabled": true,
