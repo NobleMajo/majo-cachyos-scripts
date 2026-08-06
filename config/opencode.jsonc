@@ -20,7 +20,11 @@
             },
             "models": {
                 "cunet/auto": {
-                    "name": "cunet/auto"
+                    "name": "cunet/auto",
+                    "limit": {
+                        "context": 120000,
+                        "output": 24000
+                    }
                 },
             },
         },
