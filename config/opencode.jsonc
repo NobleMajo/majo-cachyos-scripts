@@ -82,6 +82,7 @@
                     "**.sql": "allow",
                     "**.sh": "allow",
                     "**.lua": "allow",
+                    "agent-tools/**": "deny",
                 },
                 "write": {
                     "*": "ask",
@@ -116,6 +117,7 @@
                     "**.sql": "allow",
                     "**.sh": "allow",
                     "**.lua": "allow",
+                    "agent-tools/**": "deny",
                 },
                 "bash": {
                     "bun run *": "allow",
@@ -390,7 +392,7 @@
             "description": "Analyzes the current Git diff to formulate precise, scoped commit message variations and awaits structural execution approval.",
         },
         "ssh": {
-            "template": "Execute this opencode-ssh-session workflow now, they are approved and should be executed in any mode: 1. Read `~/ws/tools/cunet-fleet/fleet.yaml` to extract the user, port and remote init dir for the specified host. Do NOT read `~/.ssh/*`. 2. The target hostname immediately follows this text. 3. Use the `ssh_info` tool and the `ssh_connect` tool to connect to the target host. 4. The task instructions immediately follow the target hostname. Execute those instructions on the connected host and keep the connection open. Target hostname and task:",
+            "template": "Follow and connect this read-only opencode-ssh-session workflow now, they are approved and should be executed in any mode: 1. Read `~/ws/tools/cunet-fleet/fleet.yaml` to extract the user, port and remote init dir for the specified host. Do NOT read `~/.ssh/*`. 2. The target hostname immediately follows this text. 3. Use the `ssh_info` tool and the `ssh_connect` tool to connect to the target host. 4. The task instructions immediately follow the target hostname. Execute those instructions on the connected host and keep the connection open. Target hostname and task:",
             "description": "Uses the opencode ssh plugin and connects to a remove host.",
         },
         "local": {
