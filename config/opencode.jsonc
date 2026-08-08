@@ -172,6 +172,7 @@
             "*.sample.npmrc*": "allow",
             "*.env.project": "allow",
         },
+        "grep": "allow",
         "glob": {
             "*": "ask",
             "~/**": "deny",
