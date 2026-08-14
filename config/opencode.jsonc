@@ -12,9 +12,10 @@
             "npm": "@ai-sdk/openai-compatible",
             "options": {
                 "baseURL": "https://ai.intern.coreunit.net/v1",
+                "apiKey": "{env:CUNET_AI_KEY}",
                 "headers": {
                     "Authorization": "Basic {env:CUNET_AI_BASIC_AUTH}",
-                    "x-bf-vk": "{env:CUNET_AI_KEY}",
+                    //"x-bf-vk": "{env:CUNET_AI_KEY}",
                 },
                 "modelsDiscovery": {
                     "enabled": true,
